@@ -1,4 +1,4 @@
-# 📈 bazaar
+# 📈 auto-go-app
 
 `auto-go-app` is a backend service written in Go.
 
