@@ -49,10 +49,10 @@ jobs:
         run: |
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             version=${GITHUB_REF#refs/tags/v}
-            echo "::set-output name=version_tag::$version"
-            echo "::set-output name=tags::$IMAGE_NAME:$version,$IMAGE_NAME:latest"
+            echo "version_tag=$version" >> $GITHUB_OUTPUT
+            echo "tags=$IMAGE_NAME:$version,$IMAGE_NAME:latest" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=tags::$IMAGE_NAME:latest"
+            echo "tags=$IMAGE_NAME:latest" >> $GITHUB_OUTPUT
           fi
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
