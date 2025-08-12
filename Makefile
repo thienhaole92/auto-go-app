@@ -16,7 +16,7 @@ pre-gci:
 
 .PHONY:gci
 gci: pre-gci
-	gci write -s standard -s default -s "prefix($$(go list -m))" .
+	gci write --skip-generated -s standard -s default .
 
 .PHONY:pre-lint
 pre-lint:
@@ -25,9 +25,7 @@ pre-lint:
 
 .PHONY:lint
 lint: pre-lint
-	go mod tidy
 	gofumpt -l -w .
-	go vet ./...
 	golangci-lint run
 
 .PHONY:pre-test-go

@@ -2,14 +2,13 @@ package main
 
 import (
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/thienhaole92/auto-go-app/internal/config"
+	"github.com/thienhaole92/auto-go-app/internal/service"
 	"github.com/thienhaole92/uframework/container"
 	"github.com/thienhaole92/uframework/httpserver"
 	"github.com/thienhaole92/uframework/metricserver"
 	"github.com/thienhaole92/uframework/notifylog"
 	"github.com/thienhaole92/uframework/runner"
-
-	"github.com/thienhaole92/auto-go-app/internal/config"
-	"github.com/thienhaole92/auto-go-app/internal/service"
 )
 
 const (
