@@ -5,12 +5,13 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
-	"github.com/thienhaole92/uframework/notifylog"
-
 	"github.com/thienhaole92/auto-go-app/internal/service"
+	"github.com/thienhaole92/uframework/notifylog"
 )
 
 func TestNewHealthHandler(t *testing.T) {
+	t.Parallel()
+
 	mockLog := notifylog.New("test-logger", notifylog.JSON)
 	handler := service.NewHealthHandler(mockLog)
 
@@ -18,6 +19,8 @@ func TestNewHealthHandler(t *testing.T) {
 }
 
 func TestHealthHandler_Handle(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		wantData map[string]any
@@ -30,15 +33,17 @@ func TestHealthHandler_Handle(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockLog := notifylog.New("test-logger", notifylog.JSON)
 			h := service.NewHealthHandler(mockLog)
 
 			got, err := h.Handle(nil, nil)
 
-			require.Equal(t, tt.wantData, got.Data)
-			require.Equal(t, tt.wantErr, err)
+			require.Equal(t, test.wantData, got.Data)
+			require.Equal(t, test.wantErr, err)
 		})
 	}
 }

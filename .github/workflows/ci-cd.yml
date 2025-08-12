@@ -37,10 +37,14 @@ jobs:
       - name: Run tests
         run: make test-go
   build-and-push:
+    name: Build and Push Docker Image
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    # Only run for main branch or tags (not for PRs)
+    if: github.event_name == 'push'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,3 +65,26 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Determine tags
+        id: tags
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            version=${GITHUB_REF#refs/tags/v}
+            echo "version_tag=$version" >> $GITHUB_OUTPUT
+            echo "tags=$IMAGE_NAME:$version,$IMAGE_NAME:latest" >> $GITHUB_OUTPUT
+          else
+            echo "tags=$IMAGE_NAME:latest" >> $GITHUB_OUTPUT
+          fi
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+          tags: ${{ steps.tags.outputs.tags }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
