@@ -107,7 +107,7 @@ jobs:
       - name: Update .env on server
         run: |
           ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
-            "sed -i 's/^AUTO_GO_APP_VERSION=.*/AUTO_GO_APP_VERSION=${{ github.event.inputs.version }}/g' /opt/docker/.env"
+            "sed -i 's/^AUTO_GO_APP_VERSION=.*/AUTO_GO_APP_VERSION=latest/g' /opt/docker/.env"
       - name: Show updated .env
         run: ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} cat /opt/docker/.env
       - name: Restart service via Docker Compose
