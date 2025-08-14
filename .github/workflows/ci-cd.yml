@@ -38,6 +38,9 @@ jobs:
         run: make test-go
   build-and-push:
     name: Build and Push Docker Image
+    outputs:
+      short_sha_tag: ${{ steps.tags.outputs.short_sha_tag }}
+      version_tag: ${{ steps.tags.outputs.version_tag }}
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -108,7 +111,7 @@ jobs:
           chmod 644 ~/.ssh/known_hosts
       - name: Update .env on server
         run: |
-          TAG="${{ steps.tags.outputs.short_sha_tag || 'latest' }}"
+          TAG="${{ needs.build-and-push.outputs.short_sha_tag || 'latest' }}"
           ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
             "sed -i 's/^AUTO_GO_APP_VERSION=.*/AUTO_GO_APP_VERSION=$TAG/g' /opt/docker/.env"
       - name: Show updated .env
