@@ -72,7 +72,9 @@ jobs:
             echo "version_tag=$version" >> $GITHUB_OUTPUT
             echo "tags=$IMAGE_NAME:$version,$IMAGE_NAME:latest" >> $GITHUB_OUTPUT
           else
-            echo "tags=$IMAGE_NAME:latest" >> $GITHUB_OUTPUT
+            short_sha=$(git rev-parse --short HEAD)
+            echo "short_sha_tag=$short_sha" >> $GITHUB_OUTPUT
+            echo "tags=$IMAGE_NAME:$short_sha" >> $GITHUB_OUTPUT
           fi
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
@@ -106,8 +108,9 @@ jobs:
           chmod 644 ~/.ssh/known_hosts
       - name: Update .env on server
         run: |
+          TAG="${{ steps.tags.outputs.short_sha_tag || 'latest' }}"
           ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
-            "sed -i 's/^AUTO_GO_APP_VERSION=.*/AUTO_GO_APP_VERSION=latest/g' /opt/docker/.env"
+            "sed -i 's/^AUTO_GO_APP_VERSION=.*/AUTO_GO_APP_VERSION=$TAG/g' /opt/docker/.env"
       - name: Show updated .env
         run: ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} cat /opt/docker/.env
       - name: Restart service via Docker Compose
