@@ -43,7 +43,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    # Only run for main branch or tags (not for PRs)
     if: github.event_name == 'push'
     steps:
       - name: Checkout code
@@ -88,3 +87,30 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
+  deploy-development:
+    name: Deploy App (Development)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEVELOPMENT_DEPLOY_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 400 ~/.ssh/id_ed25519
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_ed25519
+      - name: Add host to known_hosts
+        run: |
+          ssh-keyscan -t rsa,ed25519 ${{ vars.DEVELOPMENT_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+      - name: Update .env on server
+        run: |
+          ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
+            "sed -i 's/^AUTO_GO_APP_VERSION=.*/AUTO_GO_APP_VERSION=${{ github.event.inputs.version }}/g' /opt/docker/.env"
+      - name: Show updated .env
+        run: ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} cat /opt/docker/.env
+      - name: Restart service via Docker Compose
+        run: |
+          ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
+            "cd /opt/docker/ && sudo docker compose up -d --force-recreate auto-go-app" || exit 0
