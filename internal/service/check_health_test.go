@@ -28,7 +28,7 @@ func TestHealthHandler_Handle(t *testing.T) {
 	}{
 		{
 			name:     "successful health check",
-			wantData: map[string]any{"msg": "OK"},
+			wantData: map[string]interface{}{"commit_sha": "", "msg": "OK"},
 			wantErr:  nil,
 		},
 	}
