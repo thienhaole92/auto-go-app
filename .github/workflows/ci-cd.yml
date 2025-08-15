@@ -67,6 +67,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Get short Git commit SHA
+        id: vars
+        run: echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Determine tags
         id: tags
         run: |
@@ -75,12 +78,12 @@ jobs:
             echo "version_tag=$version" >> $GITHUB_OUTPUT
             echo "tags=$IMAGE_NAME:$version,$IMAGE_NAME:latest" >> $GITHUB_OUTPUT
           else
-            short_sha=$(git rev-parse --short HEAD)
-            echo "short_sha_tag=$short_sha" >> $GITHUB_OUTPUT
-            echo "tags=$IMAGE_NAME:$short_sha" >> $GITHUB_OUTPUT
+            echo "short_sha_tag=$COMMIT_SHA" >> $GITHUB_OUTPUT
+            echo "tags=$IMAGE_NAME:$COMMIT_SHA" >> $GITHUB_OUTPUT
           fi
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          COMMIT_SHA: ${{ env.COMMIT_SHA }}
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -92,6 +95,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
+            COMMIT_SHA=${{ env.COMMIT_SHA }}
   deploy-development:
     name: Deploy App (Development)
     needs: build-and-push
