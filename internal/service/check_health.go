@@ -1,6 +1,8 @@
 package service
 
 import (
+	"os"
+
 	"github.com/labstack/echo/v4"
 	"github.com/thienhaole92/uframework/httpserver"
 	"github.com/thienhaole92/uframework/notifylog"
@@ -36,7 +38,8 @@ func (h *HealthHandler) Handle(_ echo.Context, _ *HealthCheckRequest) (*httpserv
 	return &httpserver.Response{
 		RequestID: "",
 		Data: map[string]any{
-			"msg": "OK",
+			"msg":        "OK",
+			"commit_sha": os.Getenv("COMMIT_SHA"),
 		},
 		Pagination: nil,
 	}, nil

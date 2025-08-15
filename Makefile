@@ -6,9 +6,9 @@ pre-commit:
 	go vet ./...
 	go fmt ./...
 
-.PHONY: build
-build:
-	env GOOS=$(TARGETOS) GOARCH=$(TARGETARCH) go build -o $(SERVICE_NAME)
+.PHONY: build-image
+build-image:
+	docker build --build-arg COMMIT_SHA=latest -f ./Dockerfile -t thienhaole92/$(SERVICE_NAME):latest .
 
 .PHONY:pre-gci
 pre-gci:

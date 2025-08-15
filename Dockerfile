@@ -6,10 +6,10 @@ ARG ALPINE_VERSION=3.22
 ########################
 # --- Build Stage --- #
 ########################
-FROM --platform=$BUILDPLATFORM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
+FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 # Install build dependencies
-RUN apk add --no-cache git gcc g++ make
+RUN apk add --no-cache upx
 
 WORKDIR /src
 
@@ -25,31 +25,28 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # Build the Go application
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH make build
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+    go build \
+    -ldflags="-s -w" \
+    -trimpath \
+    -o auto-go-app && \
+    upx --lzma -q auto-go-app
 
 ########################
 # --- Final Stage --- #
 ########################
-FROM alpine:${ALPINE_VERSION} AS final
+FROM gcr.io/distroless/static:latest AS final
 
-# Add minimal runtime dependencies (curl only if your app needs it)
-RUN apk add --no-cache curl
+ARG COMMIT_SHA=unknown
+
+# Environment variables
+ENV COMMIT_SHA=${COMMIT_SHA}
 
 # Set working directory
 WORKDIR /app
 
 # Copy the compiled binary
-COPY --from=builder /src/auto-go-app /app/auto-go-app
-
-# Add metadata labels
-LABEL org.opencontainers.image.source="https://your.repo.url" \
-    org.opencontainers.image.authors="Hao Le <thienhaole92@gmail.com>" \
-    org.opencontainers.image.version="${GO_VERSION}" \
-    org.opencontainers.image.description="An app built with Go ${GO_VERSION}"
-
-# Use a non-root user if security matters
-RUN adduser -D appuser
-USER appuser
+COPY --from=builder --chown=nonroot:nonroot /src/auto-go-app /app/auto-go-app
 
 # Use ENTRYPOINT for better shell signal handling
 ENTRYPOINT ["/app/auto-go-app"]

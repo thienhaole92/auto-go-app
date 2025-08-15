@@ -1,0 +1,19 @@
+services:
+  auto-go-app:
+    image: thienhaole92/auto-go-app:${AUTO_GO_APP_VERSION:-latest}
+    ports:
+      - 9080:9080
+    environment:
+      - GRACEFUL_SHUTDOWN_PERIOD=30s
+      - LOG_LEVEL=info
+      - METRIC_SERVER_HOST=0.0.0.0
+      - METRIC_SERVER_PORT=9092
+      - METRIC_SERVER_READ_TIMEOUT=30s
+      - METRIC_SERVER_WRITE_TIMEOUT=30s
+      - HTTP_SERVER_HOST=0.0.0.0
+      - HTTP_SERVER_PORT=9080
+      - HTTP_SERVER_READ_TIMEOUT=30s
+      - HTTP_SERVER_WRITE_TIMEOUT=30s
+      - HTTP_ENABLE_CORS=false
+      - HTTP_BODY_LIMIT=100K
+      - HTTP_SKIP_REQUEST_ID=true
