@@ -125,7 +125,7 @@ jobs:
           ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
             "cd /opt/docker/ && sudo docker compose up -d --force-recreate auto-go-app" || exit 0
   notify-ansible-deployment:
-    name: Ansible Deploy App (Development)
+    name: Trigger Ansible Deployment (Development)
     needs: deploy-development
     runs-on: ubuntu-latest
     steps:
