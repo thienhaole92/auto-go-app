@@ -102,13 +102,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
-      - name: "Check commit eligibility"
-        if: github.ref == 'refs/heads/main'
-        run: echo "This commit is eligible for dev deployment"
       - name: "Send deployment request"
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.WORKFLOW_PAT }}
           repository: thienhaole92/auto-go-release-pipeline
           event-type: trigger-dev-deploy
-          client-payload: '{sha: "${{ needs.build-and-push.outputs.short_sha_tag }}", "service_name": "auto-go-app"}'
+          client-payload: '{"short_sha_tag": "${{ needs.build-and-push.outputs.short_sha_tag }}", "service_name": "auto-go-app"}'
