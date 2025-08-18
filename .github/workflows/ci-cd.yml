@@ -102,48 +102,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEVELOPMENT_DEPLOY_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 400 ~/.ssh/id_ed25519
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_ed25519
-      - name: Add host to known_hosts
-        run: |
-          ssh-keyscan -t rsa,ed25519 ${{ vars.DEVELOPMENT_HOST }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-      - name: Update .env on server
-        run: |
-          TAG="${{ needs.build-and-push.outputs.short_sha_tag || 'latest' }}"
-          ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
-            "sed -i 's/^AUTO_GO_APP_VERSION=.*/AUTO_GO_APP_VERSION=$TAG/g' /opt/docker/.env"
-      - name: Show updated .env
-        run: ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} cat /opt/docker/.env
-      - name: Restart service via Docker Compose
-        run: |
-          ssh ${{ vars.DEPLOY_USER }}@${{ vars.DEVELOPMENT_HOST }} \
-            "cd /opt/docker/ && sudo docker compose up -d --force-recreate auto-go-app" || exit 0
-  notify-ansible-deployment:
-    name: Trigger Ansible Deployment (Development)
-    needs: deploy-development
-    runs-on: ubuntu-latest
-    steps:
       - name: "Check commit eligibility"
         if: github.ref == 'refs/heads/main'
         run: echo "This commit is eligible for dev deployment"
       - name: "Send deployment request"
-        uses: actions/github-script@v6
+        uses: peter-evans/repository-dispatch@v2
         with:
-          github-token: ${{ secrets.WORKFLOW_PAT }}
-          script: |
-            await github.rest.repos.createDispatchEvent({
-              owner: "thienhaole92",
-              repo: "auto-go-release-pipeline",
-              event_type: "trigger-dev-deploy",
-              client_payload: {
-                sha: "${{ github.sha }}",
-                triggered_by: "${{ github.actor }}"
-              }
-            });
-            console.log("Successfully requested dev deployment!");
+          token: ${{ secrets.WORKFLOW_PAT }}
+          repository: thienhaole92/auto-go-release-pipeline
+          event-type: trigger-dev-deploy
+          client-payload: '{sha: "${{ needs.build-and-push.outputs.short_sha_tag }}", "service_name": "auto-go-app"}'
