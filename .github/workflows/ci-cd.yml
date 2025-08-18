@@ -146,4 +146,4 @@ jobs:
                 triggered_by: "${{ github.actor }}"
               }
             });
-            console.log("📢 Successfully requested dev deployment!");
+            console.log("Successfully requested dev deployment!");
