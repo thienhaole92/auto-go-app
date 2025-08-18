@@ -126,6 +126,7 @@ jobs:
             "cd /opt/docker/ && sudo docker compose up -d --force-recreate auto-go-app" || exit 0
   notify-ansible-deployment:
     name: "Notify Ansible to deploy to deployment environment"
+    needs: deploy-development
     runs-on: ubuntu-latest
     steps:
       - name: "Check commit eligibility"
