@@ -38,7 +38,7 @@ func (h *HealthHandler) Handle(_ echo.Context, _ *HealthCheckRequest) (*httpserv
 	return &httpserver.Response{
 		RequestID: "",
 		Data: map[string]any{
-			"msg":        "Mon 18 Aug",
+			"msg":        "OK",
 			"commit_sha": os.Getenv("COMMIT_SHA"),
 		},
 		Pagination: nil,
