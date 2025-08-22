@@ -109,3 +109,5 @@ jobs:
           repository: thienhaole92/auto-go-release-pipeline
           event-type: trigger-dev-deploy
           client-payload: '{"short_sha_tag": "${{ needs.build-and-push.outputs.short_sha_tag }}", "service_name": "auto-go-app"}'
+
+          
